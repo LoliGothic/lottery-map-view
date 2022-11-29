@@ -1,10 +1,12 @@
 import { useRef } from "react";
+import { useRouter } from 'next/router'
+import Link from "next/link";
 import $ from "jquery";
 import axios from "axios";
 import styles from "../styles/Home.module.css";
 
-
-export default function Home(props) {
+export default function Home() {
+  const router = useRouter();
   const name = useRef(null);
   const signupPassword = useRef(null);
   const signupEmail = useRef(null);
@@ -26,19 +28,18 @@ export default function Home(props) {
   function postNewaccountData() {
     // json形式でバックエンドにname,password,emailをpostする
     axios
-      .post(props.apiURL + "signup", {
-        Name: name.current.value,
-        Password: signupPassword.current.value,
-        Email: signupEmail.current.value
+      .post(process.env.NEXT_PUBLIC_BACKEND_API_URL + "signup", {
+        name: name.current.value,
+        password: signupPassword.current.value,
+        email: signupEmail.current.value
       })
       .then((res) => {
-        console.log("success");
+        console.log(res);
       })
-      .catch((error) => {
-        console.log("error");
+      .catch((err) => {
+        alert(err.response.data);
       })
 
-    // signup画面のinputをすべてクリア
     name.current.value = "";
     signupPassword.current.value = "";
     signupEmail.current.value = "";
@@ -47,47 +48,43 @@ export default function Home(props) {
   function postAccountData() {
     // json形式でバックエンドにpassword,emailをpostする
     axios
-      .post(props.apiURL + "login", {
+      .post(process.env.NEXT_PUBLIC_BACKEND_API_URL + "login", {
         Password: loginPassword.current.value,
         Email: loginEmail.current.value
       })
       .then((res) => {
-        console.log("success");
+        router.push({pathname: "/Map", query: res.data}, "/Map")
       })
-      .catch((error) => {
-        console.log("error");
+      .catch((err) => {
+        alert(err.response.data);
       })
-
-    // login画面のinputをすべてクリア
-    loginPassword.current.value = "";
-    loginEmail.current.value = "";
   }
   
   return (
     <div className={styles.body}>
       <div className={styles.loginPage}>
         <div className={styles.form}>
-          <form className={styles.registerForm} onSubmit={postNewaccountData}>
+          <form className={styles.registerForm}>
             <input type="text" placeholder="username" ref={name} required />
             <input type="password" placeholder="password" ref={signupPassword} required />
             <input type="email" placeholder="email address" ref={signupEmail} required />
-            <button>create</button>
+            <button type="button" onClick={postNewaccountData}>create</button>
             <p className={styles.message}>
               Already registered?{" "}
-              <a href="#" onClick={switching}>
+              <Link href="#" onClick={switching}>
                 Sign In
-              </a>
+              </Link>
             </p>
           </form>
-          <form className={styles.loginForm} onSubmit={postAccountData}>
+          <form className={styles.loginForm}>
             <input type="password" placeholder="password" ref={loginPassword} required />
             <input type="email" placeholder="email address" ref={loginEmail} required />
-            <button>login</button>
+            <button type="button" onClick={postAccountData}>login</button>
             <p className={styles.message}>
               Not registered?{" "}
-              <a href="#" onClick={switching}>
+              <Link href="#" onClick={switching}>
                 Create an account
-              </a>
+              </Link>
             </p>
           </form>
         </div>
